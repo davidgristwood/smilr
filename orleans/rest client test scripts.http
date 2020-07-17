@@ -1,7 +1,7 @@
 ### Rest Client add-in test scripts 
 
-#@host = localhost:4000 
-@host = 20.191.43.250
+@host = localhost:4000 
+#@host = 20.191.43.250
 
 ### health probe test
 GET http://{{host}}/api/health

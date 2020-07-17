@@ -1,10 +1,11 @@
 using System;
-using GrainInterfaces;
-using GrainModels;
-using Orleans;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Orleans.Providers;
+using GrainInterfaces;
+using GrainModels;
+using Orleans;
 
 
 namespace Grains
@@ -20,10 +21,19 @@ namespace Grains
     [StorageProvider(ProviderName = "grain-store")]  
     public class AggregatorGrain : Grain<AggregatorGrainState>, IAggregatorGrain
     {
+        private readonly ILogger<AggregatorGrain> logger;
+
+        public AggregatorGrain(ILogger<AggregatorGrain> logger)
+        {
+            this.logger = logger; 
+        }
+
+
         // does a specfic event id exist? -1 if not, zero or greater if it
         public async Task<int> IsAnEvent(string id)
         {
-            Console.WriteLine($"** AggregatorGrain IsAnEvent() for event id {id}");
+            Console.WriteLine($"** console AggregatorGrain:IsAnEvent() for event id {id}");
+            logger.LogInformation($"** AggregatorGrain:IsAnEvent()for event id {id}");
 
             // ensure allevent List is constructed ok 
             if (State.allevents == null)
@@ -38,7 +48,8 @@ namespace Grains
         // add event id to event list
         public async Task AddAnEvent(SummaryEventInfo eventInfo)
         {
-            Console.WriteLine($"** AggregatorGrain AddAnEvent() for event id {eventInfo.id}, title {eventInfo.title}");
+            Console.WriteLine($"** console AggregatorGrain:AddAnEvent() for event id {eventInfo.id}, title {eventInfo.title}");
+            logger.LogInformation($"** AggregatorGrain:AddAnEvent() for event id {eventInfo.id}, title {eventInfo.title}");
 
             // ensure allevent List is constructed ok 
             if (State.allevents == null)
@@ -53,7 +64,8 @@ namespace Grains
             // add this event key to our active list
             State.allevents.Add(eventInfo);
 
-            Console.WriteLine($"** AggregatorGrain AddAnEvent() about to write WriteStateAsync for new event id {eventInfo.id}");
+            Console.WriteLine($"** console AggregatorGrain AddAnEvent() about to write WriteStateAsync for new event id {eventInfo.id}");
+            logger.LogInformation($"** AggregatorGrain:AddAnEvent() about to write WriteStateAsync for new event id {eventInfo.id}");
             await base.WriteStateAsync(); 
 
             return; 
@@ -63,7 +75,8 @@ namespace Grains
         // delete specific event from the aggregator event list
         public async Task DeleteAnEvent(string id)
         {
-            Console.WriteLine($"** AggregatorGrain DeleteAnEvent() for event id {id}");
+            Console.WriteLine($"** console AggregatorGrain DeleteAnEvent() for event id {id}");
+            logger.LogInformation($"** AggregatorGrain:DeleteAnEvent() for event id {id}");
 
             // check args
             if (id == "")
@@ -78,7 +91,8 @@ namespace Grains
             {
                 State.allevents.RemoveAt(index);  // remove it
 
-                Console.WriteLine($"** Aggregator Grain DeleteAnEvent() about to write WriteStateAsync for deleted event id {id}");
+                Console.WriteLine($"** console AggregatorGrain:DeleteAnEvent() about to write WriteStateAsync for deleted event id {id}");
+                logger.LogInformation($"** AggregatorGrain:DeleteAnEvent() about to write WriteStateAsync for deleted event id {id}");
                 await base.WriteStateAsync(); 
             }
 
@@ -89,7 +103,8 @@ namespace Grains
         // return filtered list of events. filter = ""|active|future|past
         public async Task<EventApiData[]> ListEvents(string filter)
         {
-            Console.WriteLine($"** AggregatorGrain ListEvents for filter '{filter}'");
+            Console.WriteLine($"** console AggregatorGrain ListEvents for filter '{filter}'");
+            logger.LogInformation($"** AggregatorGrain:ListEvents for filter '{filter}'");
 
             if (State.allevents == null)
                 State.allevents = new List<SummaryEventInfo>(); // ensure allevent List is constructed ok 
